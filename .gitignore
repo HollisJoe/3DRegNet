@@ -1,9 +1,9 @@
-logs/
-results/*.pickle
+tf/logs/
+tf/results/*.pickle
 *.eps
-registration/*.pickle
+tf/registration/*.pickle
 *.png
-data/sun3d
-venv/
-.idea/
+tf/data/sun3d
+tf/venv/
+tf/.idea/
 __pycache__/
