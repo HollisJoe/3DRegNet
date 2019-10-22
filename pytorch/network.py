@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-
+# https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 class ResNetBlock1d(nn.Module):
     def __init__(self, channels=128, kernel_size=1):
         super(ResNetBlock1d, self).__init__()
