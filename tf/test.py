@@ -87,14 +87,25 @@ def test_process(mode, sess, data, cur_global_step, summary_writer, config, xin1
 
         # Actual construction of the batch
         x1_b = np.array(x1[idx_cur]).reshape((1, 1, -1, 3))
+        print(x1_b.shape)
         x1_b = x1_b[:, :, :int(x1_b.shape[2] * per), :]
+
         x2_b = np.array(x2[idx_cur]).reshape((1, 1, -1, 3))
+        print(x2_b.shape)
         x2_b = x2_b[:, :, :int(x2_b.shape[2] * per), :]
-    
+
+        input('pause')
+
         Rs_b = np.array(Rs[idx_cur]).reshape((1, 9))
         ts_b = np.array(ts[idx_cur]).reshape((1, 3))
         fs_b = np.array(fs[idx_cur]).reshape((1,-1))
         fs_b = fs_b[:, :int(fs_b.shape[1] * per)]
+
+        print(Rs_b.shape)
+        print(ts_b.shape)
+        print(fs_b.shape)
+        print(np.sum(fs_b))
+        input('pause')
 
         # Feed Dict
         feed_dict = {

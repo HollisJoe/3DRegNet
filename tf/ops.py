@@ -521,6 +521,8 @@ def regression_layer(cur_input, nb_channels, patch, stride, nb_fc, perform_gcn, 
     print(outputs.shape)
 
     l1 = linear(outputs, nb_fc, activation_fn=tf.nn.relu, name='linear_1')
+    print(l1.shape)
+    print('here 1')
     # R_hat = linear(l1, 3, name='R_hat')
     # t_hat = linear(l1, 3, name='t_hat')
 

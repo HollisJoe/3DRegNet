@@ -21,6 +21,7 @@ def build_graph(x_in, is_training, config):
     x_in_shp = tf.shape(x_in)
 
     cur_input = x_in
+    print('x_in')
     print(cur_input.shape)
     idx_layer = 0
     numlayer = config.net_depth
@@ -29,7 +30,6 @@ def build_graph(x_in, is_training, config):
     # Use resnet or simle net
     act_pos = config.net_act_pos
     conv1d_block = conv1d_resnet_block
-
 
     # First convolution
     with tf.variable_scope("hidden-input"):
@@ -44,9 +44,11 @@ def build_graph(x_in, is_training, config):
             act_pos="pre",
             data_format="NHWC",
         )
-        print(cur_input.shape)
-
         concat = globalmax_pool1d(cur_input)
+        print('first conv')
+        print(cur_input.shape)
+        print(concat.shape)
+
 
     for _ksize, _nchannel in zip(
             [ksize] * numlayer, [nchannel] * numlayer):
@@ -63,19 +65,21 @@ def build_graph(x_in, is_training, config):
                 act_pos=act_pos,
                 data_format="NHWC",
             )
-
+            print('hidden ', idx_layer)
             print(cur_input.shape)
 
         idx_layer += 1
 
         concat = tf.concat([concat, globalmax_pool1d(cur_input)], axis=1)
+        print('hidden ', idx_layer)
+        print(concat.shape)
+
 
     if config.net_concat_post:
         concat, _ = tf.nn.top_k(tf.transpose(cur_input, perm=[0, 1, 3, 2]), k=13)
         concat = tf.squeeze(concat, axis=1)
         concat = tf.transpose(concat, perm=[0, 2, 1])
 
-    print(concat.shape)
 
     with tf.variable_scope("regression"):
     # with tf.variable_scope("output"):
@@ -90,6 +94,7 @@ def build_graph(x_in, is_training, config):
                                  is_training=is_training,
                                  data_format="NHWC",
                                  representation= config.representation)
+        print(R_hat.shape)
 
 
     with tf.variable_scope("output"):
@@ -109,7 +114,7 @@ def build_graph(x_in, is_training, config):
     logits = cur_input
     print(cur_input.shape)
 
-
+    input('pause')
     return logits, R_hat, t_hat
 
 
