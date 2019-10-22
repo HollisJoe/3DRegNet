@@ -252,8 +252,8 @@ def get_W_b_conv1d(in_channel, out_channel, ksize, dtype=None):
         initializer=tf.zeros_initializer(),
     )
 
-    tf.summary.histogram("W", W)
-    tf.summary.histogram("b", b)
+    tf.compat.v1.summary.histogram("W", W)
+    tf.compat.v1.summary.histogram("b", b)
 
     return W, b
 

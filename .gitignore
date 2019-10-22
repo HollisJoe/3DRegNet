@@ -6,3 +6,4 @@ registration/*.pickle
 data/sun3d
 venv/
 .idea/
+__pycache__/

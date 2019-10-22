@@ -29,6 +29,8 @@ class Network(object):
 
         gpu_flag = False
 
+        assert config.gpu_options == 'gpu'
+
         if config.gpu_options == 'gpu':
             device_name = '/' + config.gpu_options + ':' + config.gpu_number
             gpu_flag = True
@@ -49,7 +51,7 @@ class Network(object):
 
 
     def _init_tensorflow(self, gpu_flag):
-
+        assert gpu_flag
         if not gpu_flag:
             #limit CPU threads with OMP_NUM_THREADS
             num_threads = (int)(os.popen('grep -c cores /proc/cpuinfo').read())
@@ -65,10 +67,11 @@ class Network(object):
                 tfconfig = tf.ConfigProto()
 
         else:
-            gpu_options = tf.GPUOptions(allow_growth=True)
-            tfconfig = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True, gpu_options=gpu_options)
+            print('intializing gpu options')
+            gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
+            tfconfig = tf.compat.v1.ConfigProto(allow_soft_placement=True, log_device_placement=True, gpu_options=gpu_options)
 
-        self.sess = tf.Session(config=tfconfig)
+        self.sess = tf.compat.v1.Session(config=tfconfig)
 
     def _build_placeholder(self):
 
