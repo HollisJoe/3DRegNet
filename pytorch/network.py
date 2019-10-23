@@ -1,19 +1,18 @@
 import torch
 import torch.nn as nn
 
+
 # https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 class ResNetBlock1d(nn.Module):
     def __init__(self, channels=128, kernel_size=1):
         super(ResNetBlock1d, self).__init__()
 
-        self.conv1 = nn.Conv1d(in_channels=channels,
-                               out_channels=channels,
-                               kernel_size=1)
+        self.conv1 = nn.Conv1d(channels, channels, 1)
+        self.conv2 = nn.Conv1d(channels, channels, 1)
+
         self.bn1 = nn.BatchNorm1d(channels)
-        self.conv2 = nn.Conv1d(in_channels=channels,
-                               out_channels=channels,
-                               kernel_size=1)
         self.bn2 = nn.BatchNorm1d(channels)
+
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
@@ -42,19 +41,16 @@ class GlobalMaxPool1d(nn.Module):
 class RegNetClassifier(nn.Module):
     def __init__(self, resnet_blocks=12, feature_channels=128):
         super(RegNetClassifier, self).__init__()
-        self.conv_first = nn.Conv1d(in_channels=6,
-                                    out_channels=feature_channels,
-                                    kernel_size=1)
-
-        self.global_maxpool1d = GlobalMaxPool1d()
+        self.conv_first = nn.Conv1d(6, feature_channels, 1)
+        self.conv_weight = nn.Conv1d(feature_channels, 1, 1)
 
         self.resnet_blocks = []
         for i in range(0, resnet_blocks):
             self.resnet_blocks.append(ResNetBlock1d(channels=feature_channels))
 
-        self.conv_weight = nn.Conv1d(in_channels=feature_channels,
-                                     out_channels=1,
-                                     kernel_size=1)
+        self.global_maxpool1d = GlobalMaxPool1d()
+        self.tanh = nn.Tanh()
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         # input: (b, 6, N)
@@ -71,6 +67,7 @@ class RegNetClassifier(nn.Module):
 
         # output weight: (b, 1, N)
         weight = self.conv_weight(x)
+        weight = self.relu(self.tanh(x))
 
         # output feature: (b, 128, 13)
         feature = torch.cat(features, dim=-1)
@@ -85,10 +82,7 @@ class RegNetRegressor(nn.Module):
                  conv_channels=8,
                  fc2_channels=256):
         super(RegNetRegressor, self).__init__()
-        self.conv = nn.Conv2d(in_channels=1,
-                              out_channels=conv_channels,
-                              kernel_size=3,
-                              stride=(2, 1))
+        self.conv = nn.Conv2d(1, conv_channels, 3, stride=(2, 1))
         self.relu = nn.ReLU(inplace=True)
 
         self.fc1_channels = conv_channels \
@@ -110,7 +104,7 @@ class RegNetRegressor(nn.Module):
         x = self.fc1(x)
         x = self.relu(x)
 
-        # (B, 256)
+        # (b, 256)
         x = self.fc2(x)
 
         # output pose: (b, 6)
