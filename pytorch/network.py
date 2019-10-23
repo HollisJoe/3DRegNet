@@ -2,6 +2,27 @@ import torch
 import torch.nn as nn
 
 
+class GlobalMaxPool1d(nn.Module):
+    def __init__(self):
+        super(GlobalMaxPool1d, self).__init__()
+
+    def forward(self, x):
+        return torch.max(x, dim=-1).values.unsqueeze(-1)
+
+
+class ContextNormalization1d(nn.Module):
+    def __init__(self):
+        super(ContextNormalization1d, self).__init__()
+
+    def forward(self, x):
+        # B x C x N -> B x C x 1
+        eps = 1e-3
+        mean = x.mean(2, keepdim=True)
+        var = x.var(2, keepdim=True)
+        x = (x - mean) / (var.sqrt() + eps)
+        return x
+
+
 # https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 class ResNetBlock1d(nn.Module):
     def __init__(self, channels=128, kernel_size=1):
@@ -13,29 +34,26 @@ class ResNetBlock1d(nn.Module):
         self.bn1 = nn.BatchNorm1d(channels)
         self.bn2 = nn.BatchNorm1d(channels)
 
+        self.cn1 = ContextNormalization1d()
+        self.cn2 = ContextNormalization1d()
+
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         identity = x
 
         out = self.conv1(x)
+        out = self.cn1(out)
         out = self.bn1(out)
         out = self.relu(out)
 
         out = self.conv2(out)
+        out = self.cn2(out)
         out = self.bn2(out)
 
         out = self.relu(out + identity)
 
         return out
-
-
-class GlobalMaxPool1d(nn.Module):
-    def __init__(self):
-        super(GlobalMaxPool1d, self).__init__()
-
-    def forward(self, x):
-        return torch.max(x, dim=-1).values.unsqueeze(-1)
 
 
 class RegNetClassifier(nn.Module):
