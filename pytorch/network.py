@@ -23,7 +23,9 @@ class ContextNormalization1d(nn.Module):
         return x
 
 
+# Reference:
 # https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
+# But this architecture is slightly different
 class ResNetBlock1d(nn.Module):
     def __init__(self, channels=128, kernel_size=1):
         super(ResNetBlock1d, self).__init__()
@@ -50,10 +52,9 @@ class ResNetBlock1d(nn.Module):
         out = self.conv2(out)
         out = self.cn2(out)
         out = self.bn2(out)
+        out = self.relu(out)
 
-        out = self.relu(out + identity)
-
-        return out
+        return out + identity
 
 
 class RegNetClassifier(nn.Module):
@@ -101,7 +102,6 @@ class RegNetRegressor(nn.Module):
                  fc2_channels=256):
         super(RegNetRegressor, self).__init__()
         self.conv = nn.Conv2d(1, conv_channels, 3, stride=(2, 1))
-        self.relu = nn.ReLU(inplace=True)
 
         self.fc1_channels = conv_channels \
             * (resnet_blocks - 1) \
@@ -109,11 +109,15 @@ class RegNetRegressor(nn.Module):
         self.fc1 = nn.Linear(self.fc1_channels, fc2_channels)
         self.fc2 = nn.Linear(fc2_channels, 6)
 
+        self.relu = nn.ReLU(inplace=True)
+        self.cn = ContextNormalization1d()
+
     def forward(self, x):
         # input: (b, 128, 13) -> unsqueeze -> (b, 1, 128, 13)
         x = x.unsqueeze(1)
 
         # (b, 8, 63, 11)
+        x = self.cn(x)
         x = self.conv(x)
         x = self.relu(x)
         x = x.view(-1, self.fc1_channels)

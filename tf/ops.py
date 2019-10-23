@@ -345,6 +345,7 @@ def conv1d_resnet_block(inputs, ksize, nchannel, activation_fn, is_training,
         else:
             in_channel = in_shp[1]
         if in_channel != nchannel:
+            print('PASS BRANCH')
             cur_in = inputs
             # Simply change channels through 1x1 conv
             with tf.variable_scope("conv"):
@@ -367,6 +368,7 @@ def conv1d_resnet_block(inputs, ksize, nchannel, activation_fn, is_training,
         cur_in = inputs
         # Do bottle neck if necessary (Linear)
         if midchannel != nchannel:
+            print('CONV BRANCH')
             with tf.variable_scope("preconv"):
                 cur_in = conv1d_layer(
                     inputs=cur_in, ksize=1,
@@ -382,6 +384,7 @@ def conv1d_resnet_block(inputs, ksize, nchannel, activation_fn, is_training,
 
         # Main convolution
         with tf.variable_scope("conv1"):
+            print('RIGHT BRANCH')
             # right branch
             cur_in = conv1d_layer(
                 inputs=cur_in, ksize=ksize,
@@ -398,6 +401,7 @@ def conv1d_resnet_block(inputs, ksize, nchannel, activation_fn, is_training,
         # Main convolution
         with tf.variable_scope("conv2"):
             # right branch
+            print('RIGHT BRANCH')
             cur_in = conv1d_layer(
                 inputs=cur_in, ksize=ksize,
                 nchannel=nchannel,
@@ -412,6 +416,7 @@ def conv1d_resnet_block(inputs, ksize, nchannel, activation_fn, is_training,
 
         # Do bottle neck if necessary (Linear)
         if midchannel != nchannel:
+            print('POST BRANCH')
             with tf.variable_scope("postconv"):
                 cur_in = conv1d_layer(
                     inputs=cur_in, ksize=1,
